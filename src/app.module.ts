@@ -1,7 +1,8 @@
 import { Module } from "@nestjs/common";
-import { DinoAppGateway } from "./modules/dino-app/dino-app.gateway";
+
+import { DinoAppModule } from "./modules/dinoapp/dino-app.module";
 
 @Module({
-  imports: [DinoAppGateway],
+  imports: [DinoAppModule],
 })
 export class AppModule {}
