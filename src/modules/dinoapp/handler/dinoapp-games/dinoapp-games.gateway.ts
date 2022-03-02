@@ -1,4 +1,5 @@
 import { Logger } from "@nestjs/common";
+
 import {
   OnGatewayConnection,
   OnGatewayInit,
@@ -9,11 +10,16 @@ import {
 } from "@nestjs/websockets";
 
 import { Server, Socket } from "socket.io";
-import { IHandleConnection } from "../../model/IHandleConnection";
+import { v4 } from "uuid";
+
+import { IHandleJoinRoom } from "../../model/IHandleConnection";
 
 import { IPlayerData } from "../../model/IPlayerData";
 
-@WebSocketGateway({ namespace: "/dinoapp-games" })
+@WebSocketGateway({
+  namespace: "/dinoapp-games",
+  cors: true,
+})
 export class DinoappGamesGateway implements OnGatewayInit, OnGatewayConnection {
   private logger: Logger = new Logger("DinoappGamesGateway");
 
@@ -26,28 +32,38 @@ export class DinoappGamesGateway implements OnGatewayInit, OnGatewayConnection {
   srv: Server;
 
   afterInit(server: Server) {
-    console.log("Gateway initialized");
+    this.logger.log("Init", server);
   }
 
-  handleConnection({ client, data }: IHandleConnection): WsResponse<string> {
+  handleConnection(client: Socket) {
+    this.logger.log("Client connected: " + client.id);
+  }
+
+  @SubscribeMessage("joinRoom")
+  handleJoinRoom(
+    client?: Socket,
+    data?: IHandleJoinRoom
+  ): WsResponse<IHandleJoinRoom | string> {
+    data.id = v4();
+
     if (!this.currentPlayers[data.room]) {
       return {
-        event: "msgToClient",
-        data: "Room doest not exist",
+        event: "alertToClient",
+        data: "Room does not exist",
       };
     }
 
     client?.join(data.room);
 
-    this.currentPlayers[data.room].push(data.player);
+    this.currentPlayers[data.room].push(data);
 
-    return { event: "msgToClient", data: "You have joined a room" };
+    console.log(this.currentPlayers);
+
+    return { event: "msgToClient", data };
   }
 
   @SubscribeMessage("msgToServer")
-  sendPlayerData(data: IPlayerData): WsResponse<IPlayerData> {
-    this.currentPlayers[data.room].push(data);
-
-    return { event: "msgToClient", data };
+  sendPlayerData(data: IPlayerData) {
+    this.srv?.to(data.room).emit("msgToClient", data);
   }
 }
