@@ -183,4 +183,16 @@ describe("DinoappGamesGateway", () => {
     expect(gateway.currentPlayers.if1Room[0].voteStatus).toEqual("THINKING");
     expect(gateway.currentPlayers.if1Room[1].voteStatus).toEqual("THINKING");
   });
+
+  it("should clear all the room players", () => {
+    const player1 = returnPlayer({ room: "if1Room" });
+    const player2 = returnPlayer({ room: "if1Room" });
+
+    gateway.handleJoinRoom(socket, player1);
+    gateway.handleJoinRoom(socket, player2);
+
+    gateway.resetPlayers(socket, player1);
+
+    expect(gateway.currentPlayers.if1Room).toEqual([]);
+  });
 });

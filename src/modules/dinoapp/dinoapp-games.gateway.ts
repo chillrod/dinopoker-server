@@ -122,4 +122,13 @@ export class DinoappGamesGateway implements OnGatewayInit, OnGatewayConnection {
 
     return { event: "msgPlayerData", data: this.currentPlayers[data.room] };
   }
+
+  @SubscribeMessage("resetPlayers")
+  resetPlayers(client: Socket, data: IPlayerData): WsResponse<IPlayerData> {
+    this.currentPlayers[data.room] = [];
+
+    this.srv?.emit("msgPlayerData", this.currentPlayers[data.room]);
+
+    return { event: "msgPlayerData", data: this.currentPlayers[data.room] };
+  }
 }
