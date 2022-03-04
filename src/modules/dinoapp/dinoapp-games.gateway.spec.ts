@@ -96,7 +96,6 @@ describe("DinoappGamesGateway", () => {
     const updatedVote = {
       ...player,
       vote: 1,
-      voteStatus: "SECRET",
     };
 
     gateway.handleJoinRoom(socket, player);
@@ -107,7 +106,7 @@ describe("DinoappGamesGateway", () => {
 
     expect(findPlayer.vote).toEqual(0);
 
-    gateway.voteStatus(socket, updatedVote);
+    gateway.changeVote(socket, updatedVote);
 
     expect(findPlayer.voteStatus).toEqual("SECRET");
 
@@ -130,13 +129,11 @@ describe("DinoappGamesGateway", () => {
     const updatedVote = {
       ...player1,
       vote: 1,
-      voteStatus: "SECRET",
     };
 
     const updatedVote2 = {
       ...player3,
       vote: 1,
-      voteStatus: "SECRET",
     };
 
     const findPlayer = gateway.currentPlayers.if1Room.find(
@@ -165,13 +162,11 @@ describe("DinoappGamesGateway", () => {
     const updatedVote = {
       ...player1,
       vote: 1,
-      voteStatus: "SECRET",
     };
 
     const updatedVote2 = {
       ...player1,
       vote: 1,
-      voteStatus: "SECRET",
     };
 
     gateway.changeVote(socket, updatedVote);

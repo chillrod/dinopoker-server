@@ -78,6 +78,7 @@ export class DinoappGamesGateway implements OnGatewayInit, OnGatewayConnection {
     );
 
     currentPlayer.vote = data.vote;
+    currentPlayer.voteStatus = "SECRET";
 
     this.srv?.emit("msgPlayerData", this.currentPlayers[data.room]);
 
@@ -116,6 +117,7 @@ export class DinoappGamesGateway implements OnGatewayInit, OnGatewayConnection {
 
     for (const currentPlayers of this.currentPlayers[data.room]) {
       currentPlayers.vote = null;
+      currentPlayers.voteStatus = "THINKING";
     }
 
     this.srv?.emit("msgPlayerData", this.currentPlayers[data.room]);
