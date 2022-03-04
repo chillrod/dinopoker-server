@@ -4,4 +4,5 @@ export interface IPlayerData {
   character: number;
   vote: number;
   room: string;
+  voteStatus?: string;
 }
