@@ -85,6 +85,18 @@ export class DinoappGamesGateway implements OnGatewayInit, OnGatewayConnection {
     return { event: "msgPlayerData", data: this.currentPlayers[data.room] };
   }
 
+  // need to test
+  @SubscribeMessage("currentData") currentVote(
+    client: Socket,
+    data: IPlayerData
+  ): WsResponse<IPlayerData> {
+    const currentPlayer = this.currentPlayers[data.room].find(
+      (items) => items.id === data.id
+    );
+
+    return { event: "currentDataOfPlayer", data: currentPlayer };
+  }
+
   @SubscribeMessage("voteStatus")
   voteStatus(client: Socket, data: IPlayerData): WsResponse<IPlayerData> {
     const currentPlayer = this.currentPlayers[data.room].find(
@@ -120,9 +132,9 @@ export class DinoappGamesGateway implements OnGatewayInit, OnGatewayConnection {
       currentPlayers.voteStatus = "THINKING";
     }
 
-    this.srv?.emit("msgPlayerData", this.currentPlayers[data.room]);
+    this.srv?.emit("resetVotes", this.currentPlayers[data.room]);
 
-    return { event: "msgPlayerData", data: this.currentPlayers[data.room] };
+    return { event: "resetVotes", data: this.currentPlayers[data.room] };
   }
 
   @SubscribeMessage("resetPlayers")
