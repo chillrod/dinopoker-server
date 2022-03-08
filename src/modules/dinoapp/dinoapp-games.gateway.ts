@@ -2,6 +2,7 @@ import { Logger } from "@nestjs/common";
 
 import {
   OnGatewayConnection,
+  OnGatewayDisconnect,
   OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
@@ -19,8 +20,10 @@ import { IPlayerData } from "./model/IPlayerData";
   namespace: "/dinoapp-games",
   cors: true,
 })
-export class DinoappGamesGateway implements OnGatewayInit, OnGatewayConnection {
-  private logger: Logger = new Logger("DinoappGamesGateway");
+export class DinoappGamesGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
+  public logger: Logger = new Logger("DinoappGamesGateway");
 
   public currentPlayers: { if1Room: IPlayerData[]; if2Room: IPlayerData[] } = {
     if1Room: [],
@@ -29,6 +32,8 @@ export class DinoappGamesGateway implements OnGatewayInit, OnGatewayConnection {
 
   @WebSocketServer()
   srv: Server;
+
+  handleDisconnect(client: Socket) {}
 
   afterInit(server: Server) {
     this.logger.log("Init", server);

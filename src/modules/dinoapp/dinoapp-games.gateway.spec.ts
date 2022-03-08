@@ -4,7 +4,7 @@ import { v4 } from "uuid";
 
 import { DinoappGamesGateway } from "./dinoapp-games.gateway";
 
-describe("DinoappGamesGateway", () => {
+describe.skip("DinoappGamesGateway", () => {
   let gateway: DinoappGamesGateway;
   let socket: Socket;
 
