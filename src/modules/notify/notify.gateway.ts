@@ -1,4 +1,5 @@
 import { Logger } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 import {
   OnGatewayConnection,
@@ -21,6 +22,8 @@ export class NotifyGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   public logger: Logger = new Logger("NotifyGateway");
+
+  constructor(private eventEmitter: EventEmitter2) {}
 
   @WebSocketServer()
   srv: Server;
@@ -59,6 +62,11 @@ export class NotifyGateway
 
   handleDisconnect(client: Socket) {
     this.logger.log("Client disconnected: " + client.id);
+
+    this.eventEmitter.emit("handleDisconnect", {
+      status: "Client Disconnected",
+      session: client?.id,
+    });
 
     this.srv?.emit("handleDisconnect", {
       status: "Error",

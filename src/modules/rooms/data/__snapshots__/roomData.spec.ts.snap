@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Room Data should create a new room a the given room name 1`] = `
+Object {
+  "if1Room": Array [],
+}
+`;
+
+exports[`Room Data should save a player data in a room array 1`] = `undefined`;
