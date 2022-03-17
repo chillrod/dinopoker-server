@@ -5,5 +5,3 @@ Object {
   "if1Room": Array [],
 }
 `;
-
-exports[`Room Data should save a player data in a room array 1`] = `undefined`;

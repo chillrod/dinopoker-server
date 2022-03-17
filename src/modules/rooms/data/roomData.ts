@@ -27,6 +27,18 @@ export class RoomData {
     }
   }
 
+  clear(room: string) {
+    try {
+      if (this.roomExistsCheck(room)) {
+        delete this.room[room];
+      }
+
+      throw new Error("Attempted to clear a non existing room");
+    } catch (err) {
+      return err.message;
+    }
+  }
+
   assignPlayerDataToRoom(room: string, playerData: Player) {
     try {
       if (this.roomExistsCheck(room)) {
@@ -45,7 +57,7 @@ export class RoomData {
         return this.room[room];
       }
 
-      throw new Error("You attempted to return a empty room data");
+      throw new Error("You attempted a non existing room");
     } catch (err) {
       return err.message;
     }
