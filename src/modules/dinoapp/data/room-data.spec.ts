@@ -23,7 +23,7 @@ describe("Room Data", () => {
       expect(roomData.room["test"]).toEqual({
         roomVoteStatus: "WAITING",
         room: "test",
-        players: [playerData],
+        players: [],
       });
     });
 
@@ -33,6 +33,90 @@ describe("Room Data", () => {
       expect(roomData.handleRoomCreate(playerData)).toEqual(
         "You attempted to create a room that already exists"
       );
+    });
+
+    it("should update room vote status to VOTING when user vote", () => {
+      createRoom();
+
+      const Room = roomData;
+
+      Room.addCharacter(playerData);
+
+      const updatedData = {
+        ...playerData,
+        vote: 15,
+      };
+
+      Room.handleVotingStatus(updatedData);
+
+      const roomPick = Room.pick(playerData.room);
+
+      expect(roomPick.roomVoteStatus).toEqual("VOTING");
+    });
+
+    it("should update room vote status to ENDED when user clicks in reveal", () => {
+      createRoom();
+
+      const Room = roomData;
+
+      Room.addCharacter(playerData);
+
+      const updatedData = {
+        ...playerData,
+        vote: 15,
+      };
+
+      Room.handleEndedStatus(updatedData);
+
+      const roomPick = Room.pick(playerData.room);
+
+      expect(roomPick.roomVoteStatus).toEqual("ENDED");
+    });
+
+    it("should reset a room vote status to WAITING when user clicks restart", () => {
+      createRoom();
+
+      const Room = roomData;
+
+      Room.addCharacter(playerData);
+
+      const updatedData = {
+        ...playerData,
+        vote: 15,
+      };
+
+      Room.handleEndedStatus(updatedData);
+
+      const roomPick = Room.pick(playerData.room);
+
+      expect(roomPick.roomVoteStatus).toEqual("ENDED");
+
+      Room.handleRestartStatus(playerData);
+
+      const roomPick2 = Room.pick(playerData.room);
+
+      expect(roomPick2.roomVoteStatus).toEqual("WAITING");
+    });
+
+    it("should update the clients data ex: vote, etc", () => {
+      createRoom();
+
+      const Room = roomData;
+
+      Room.addCharacter(playerData);
+
+      const updatedData = {
+        ...playerData,
+        vote: 15,
+      };
+
+      const roomPick = Room.pick(playerData.room);
+
+      expect(roomPick.players[0].vote).toEqual(1);
+
+      Room.handleUpdateClientData(updatedData);
+
+      expect(roomPick.players[0].vote).toEqual(15);
     });
   });
 
@@ -48,11 +132,7 @@ describe("Room Data", () => {
 
       const Room = roomData;
 
-      expect(Room.pick("test")).toEqual({
-        roomVoteStatus: "WAITING",
-        room: "test",
-        players: [playerData],
-      });
+      expect(Room.pick("test").room).toBe("test");
     });
 
     it("should clear a room content", () => {
@@ -70,9 +150,32 @@ describe("Room Data", () => {
 
       const Room = roomData;
 
+      Room.addCharacter(playerData);
+
       Room.removeCharacter(playerData);
 
       expect(Room.pick("test").players).toEqual([]);
+    });
+
+    it("should add a character to a room when user join", () => {
+      createRoom();
+
+      const Room = roomData;
+
+      const playerData2: IPlayerData = {
+        room: "test",
+        name: "Rod",
+        id: "1231233",
+        clientId: "1231233",
+        character: 0,
+        vote: 1,
+      };
+
+      Room.addCharacter(playerData2);
+
+      Room.addCharacter(playerData);
+
+      expect(Room.pick("test").players).toEqual([playerData2, playerData]);
     });
   });
 });

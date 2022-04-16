@@ -25,7 +25,7 @@ class RoomData {
         const mountRoom: IRoomData = {
           roomVoteStatus: ROOM_STATUS.WAITING,
           room: playerData.room,
-          players: [playerData],
+          players: [],
         };
 
         return (this.room[playerData.room] = mountRoom);
@@ -78,6 +78,82 @@ class RoomData {
       throw new Error(
         "Attempting to remove a character from non existing room"
       );
+    } catch (err) {
+      return err.message;
+    }
+  }
+
+  addCharacter(client: IPlayerData) {
+    try {
+      if (this.checkIfRoomExists(client.room)) {
+        const room = this.room[client.room];
+
+        room.players.push(client);
+      }
+
+      throw new Error("Attempting to add a character to non existing room");
+    } catch (err) {
+      return err.message;
+    }
+  }
+
+  handleVotingStatus(client: IPlayerData) {
+    try {
+      if (this.checkIfRoomExists(client.room)) {
+        const room = this.room[client.room];
+
+        room.roomVoteStatus = ROOM_STATUS.VOTING;
+      }
+
+      throw new Error("Attempting to vote on non existing room");
+    } catch (err) {
+      return err.message;
+    }
+  }
+
+  handleEndedStatus(client: IPlayerData) {
+    try {
+      if (this.checkIfRoomExists(client.room)) {
+        const room = this.room[client.room];
+
+        room.roomVoteStatus = ROOM_STATUS.ENDED;
+      }
+
+      throw new Error("Attempting to end a non existing room");
+    } catch (err) {
+      return err.message;
+    }
+  }
+
+  handleRestartStatus(client: IPlayerData) {
+    try {
+      if (this.checkIfRoomExists(client.room)) {
+        const room = this.room[client.room];
+
+        room.roomVoteStatus = ROOM_STATUS.WAITING;
+      }
+
+      throw new Error("Attempting to restart a non existing room");
+    } catch (err) {
+      return err.message;
+    }
+  }
+
+  handleUpdateClientData(client: IPlayerData) {
+    try {
+      if (this.checkIfRoomExists(client.room)) {
+        const room = this.room[client.room];
+
+        room.players = room.players.map((player) => {
+          if (player.clientId === client.clientId) {
+            return client;
+          }
+
+          return player;
+        });
+      }
+
+      throw new Error("Attempting to update a non existing room");
     } catch (err) {
       return err.message;
     }
