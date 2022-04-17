@@ -145,14 +145,14 @@ describe("Room Data", () => {
       expect(Room.checkIfRoomExists("test")).toBeFalsy();
     });
 
-    it("should delete a user from room, if user no longer exists", () => {
+    it("should delete a user from room, if user no longer exists", async () => {
       createRoom();
 
       const Room = roomData;
 
       Room.addCharacter(playerData);
 
-      Room.removeCharacter(playerData);
+      await Room.removeCharacter(playerData);
 
       expect(Room.pick("test").players).toEqual([]);
     });

@@ -41,6 +41,12 @@ class RoomData {
     return this.room.hasOwnProperty(room);
   }
 
+  checkIfUserExists(client: IPlayerData) {
+    return this.room[client.room].players.some(
+      (player) => player.clientId === client.clientId
+    );
+  }
+
   pick(room: string) {
     try {
       if (this.checkIfRoomExists(room)) {
@@ -65,27 +71,30 @@ class RoomData {
     }
   }
 
-  removeCharacter(client: IPlayerData) {
-    try {
-      if (this.checkIfRoomExists(client.room)) {
-        const room = this.room[client.room];
+  removeCharacter({ clientId }: Pick<IPlayerData, "clientId">) {
+    const roomKeys = Object.keys(this.room);
 
-        room.players = room.players.filter(
-          (players) => players.clientId !== client.clientId
-        );
-      }
-
-      throw new Error(
-        "Attempting to remove a character from non existing room"
+    roomKeys.forEach((room) => {
+      const checkIfPlayerExists = this.room[room].players.some(
+        (player) => player.clientId === clientId
       );
-    } catch (err) {
-      return err.message;
-    }
+
+      if (checkIfPlayerExists) {
+        this.room[room].players = this.room[room].players.filter(
+          (player) => player.clientId !== clientId
+        );
+
+        return;
+      }
+    });
   }
 
   addCharacter(client: IPlayerData) {
     try {
-      if (this.checkIfRoomExists(client.room)) {
+      if (
+        this.checkIfRoomExists(client.room) &&
+        !this.checkIfUserExists(client)
+      ) {
         const room = this.room[client.room];
 
         room.players.push(client);

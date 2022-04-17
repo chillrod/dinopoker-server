@@ -2,6 +2,7 @@ import { Logger } from "@nestjs/common";
 
 import {
   OnGatewayConnection,
+  OnGatewayDisconnect,
   OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
@@ -11,21 +12,18 @@ import {
 
 import { Server, Socket } from "socket.io";
 
-import { IHandleJoinRoom } from "./model/IHandleConnection";
-
 import { IPlayerData } from "./model/IPlayerData";
 
+import RoomData from "./data/room-data";
+
 @WebSocketGateway({
-  namespace: "/dinoapp-games",
+  namespace: "/dinopoker-app",
   cors: true,
 })
-export class DinoappGamesGateway implements OnGatewayInit, OnGatewayConnection {
+export class DinoappGamesGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
   private logger: Logger = new Logger("DinoappGamesGateway");
-
-  public currentPlayers: { if1Room: IPlayerData[]; if2Room: IPlayerData[] } = {
-    if1Room: [],
-    if2Room: [],
-  };
 
   @WebSocketServer()
   srv: Server;
@@ -38,95 +36,25 @@ export class DinoappGamesGateway implements OnGatewayInit, OnGatewayConnection {
     this.logger.log("Client connected: " + client.id);
   }
 
-  @SubscribeMessage("joinRoom")
-  handleJoinRoom(
-    client?: Socket,
-    data?: IHandleJoinRoom
-  ): WsResponse<IHandleJoinRoom | string> {
-    return;
+  handleDisconnect(client: Socket) {
+    this.logger.log("Client disconnected: " + client.id);
+
+    RoomData.removeCharacter({ clientId: client.id });
   }
 
-  // @SubscribeMessage("getCurrentPlayers") sendPlayerDataToRoom(
-  //   client: Socket,
-  //   room: string
-  // ): WsResponse<IPlayerData> {
-  //   this.srv.emit("msgPlayerData", this.currentPlayers[room]);
+  @SubscribeMessage("handleCreateRoom")
+  handleCreateRoom(client: Socket, data: IPlayerData) {
+    this.logger.log("Client created a room: " + client.id);
 
-  //   return { event: "msgPlayerData", data: this.currentPlayers[room] };
-  // }
+    const clientDataWithClientId = {
+      ...data,
+      clientId: client.id,
+    };
 
-  // @SubscribeMessage("changeVote") changeVote(
-  //   client: Socket,
-  //   data: IPlayerData
-  // ): WsResponse<IPlayerData> {
-  //   const currentPlayer = this.currentPlayers[data.room].find(
-  //     (items) => items.id === data.id
-  //   );
+    client.join(data.room);
 
-  //   currentPlayer.vote = data.vote;
-  //   currentPlayer.voteStatus = "SECRET";
+    RoomData.handleRoomCreate(clientDataWithClientId);
 
-  //   this.srv?.emit("msgPlayerData", this.currentPlayers[data.room]);
-
-  //   return { event: "msgPlayerData", data: this.currentPlayers[data.room] };
-  // }
-
-  // // need to test
-  // @SubscribeMessage("currentData") currentVote(
-  //   client: Socket,
-  //   data: IPlayerData
-  // ): WsResponse<IPlayerData> {
-  //   const currentPlayer = this.currentPlayers[data.room].find(
-  //     (items) => items.id === data.id
-  //   );
-
-  //   return { event: "currentDataOfPlayer", data: currentPlayer };
-  // }
-
-  // @SubscribeMessage("voteStatus")
-  // voteStatus(client: Socket, data: IPlayerData): WsResponse<IPlayerData> {
-  //   const currentPlayer = this.currentPlayers[data.room].find(
-  //     (items) => items.id === data.id
-  //   );
-
-  //   this.srv?.emit("msgPlayerData", this.currentPlayers[data.room]);
-
-  //   return { event: "msgPlayerData", data: this.currentPlayers[data.room] };
-  // }
-
-  // @SubscribeMessage("revealVotes")
-  // revealVotes(client: Socket, data: IPlayerData): WsResponse<IPlayerData> {
-  //   const currentPlayers = this.currentPlayers[data.room];
-
-  //   for (const currentPlayers of this.currentPlayers[data.room]) {
-  //     currentPlayers.voteStatus = "REVEALED";
-  //   }
-
-  //   this.srv?.emit("msgPlayerData", this.currentPlayers[data.room]);
-
-  //   return { event: "msgPlayerData", data: this.currentPlayers[data.room] };
-  // }
-
-  // @SubscribeMessage("resetVotes")
-  // resetVotes(client: Socket, data: IPlayerData): WsResponse<IPlayerData> {
-  //   const currentPlayers = this.currentPlayers[data.room];
-
-  //   for (const currentPlayers of this.currentPlayers[data.room]) {
-  //     currentPlayers.vote = null;
-  //     currentPlayers.voteStatus = "THINKING";
-  //   }
-
-  //   this.srv?.emit("resetVotes", this.currentPlayers[data.room]);
-
-  //   return { event: "resetVotes", data: this.currentPlayers[data.room] };
-  // }
-
-  // @SubscribeMessage("resetPlayers")
-  // resetPlayers(client: Socket, data: IPlayerData): WsResponse<IPlayerData> {
-  //   this.currentPlayers[data.room] = [];
-
-  //   this.srv?.emit("msgPlayerData", this.currentPlayers[data.room]);
-
-  //   return { event: "msgPlayerData", data: this.currentPlayers[data.room] };
-  // }
+    RoomData.addCharacter(clientDataWithClientId);
+  }
 }
