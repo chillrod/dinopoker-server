@@ -2,6 +2,7 @@ import { IPlayerData } from "../model/IPlayerData";
 
 interface IRoomData {
   roomVoteStatus: string;
+  voteSystem?: number[];
   room: string;
   players: IPlayerData[];
 }
@@ -20,55 +21,41 @@ class RoomData {
   }
 
   handleRoomCreate(playerData: IPlayerData) {
-    try {
-      if (!this.checkIfRoomExists(playerData.room)) {
-        const mountRoom: IRoomData = {
-          roomVoteStatus: ROOM_STATUS.WAITING,
-          room: playerData.room,
-          players: [],
-        };
-
-        return (this.room[playerData.room] = mountRoom);
-      }
-
+    if (this.checkIfRoomExists(playerData.room)) {
       throw new Error("You attempted to create a room that already exists");
-    } catch (err) {
-      return err.message;
     }
+
+    const mountRoom: IRoomData = {
+      roomVoteStatus: ROOM_STATUS.WAITING,
+      room: playerData.room,
+      players: [],
+    };
+
+    this.room[playerData.room] = mountRoom;
   }
 
   checkIfRoomExists(room: string) {
     return this.room.hasOwnProperty(room);
   }
 
-  checkIfUserExists(client: IPlayerData) {
-    return this.room[client.room].players.some(
-      (player) => player.clientId === client.clientId
-    );
-  }
-
   pick(room: string) {
-    try {
-      if (this.checkIfRoomExists(room)) {
-        return this.room[room];
-      }
-
+    if (!this.checkIfRoomExists(room)) {
       throw new Error("You attempted to pick a room that does not exist");
-    } catch (err) {
-      return err.message;
     }
+
+    return this.room[room];
   }
 
   clearRoom(room: string) {
-    try {
-      if (this.checkIfRoomExists(room)) {
-        delete this.room[room];
-      }
-
+    if (!this.checkIfRoomExists(room)) {
       throw new Error("You attempted to clear a room that does not exist");
-    } catch (err) {
-      return err.message;
     }
+
+    return delete this.room[room];
+  }
+
+  checkIfRoomIsEmpty(room: string) {
+    if (!this.room[room].players.length) return this.clearRoom(room);
   }
 
   removeCharacter({ clientId }: Pick<IPlayerData, "clientId">) {
@@ -83,89 +70,66 @@ class RoomData {
         this.room[room].players = this.room[room].players.filter(
           (player) => player.clientId !== clientId
         );
-
-        return;
       }
+
+      this.checkIfRoomIsEmpty(room);
     });
   }
 
   addCharacter(client: IPlayerData) {
-    try {
-      if (
-        this.checkIfRoomExists(client.room) &&
-        !this.checkIfUserExists(client)
-      ) {
-        const room = this.room[client.room];
-
-        room.players.push(client);
-      }
-
+    if (!this.checkIfRoomExists(client.room)) {
       throw new Error("Attempting to add a character to non existing room");
-    } catch (err) {
-      return err.message;
     }
+
+    const room = this.room[client.room];
+
+    return room.players.push(client);
   }
 
   handleVotingStatus(client: IPlayerData) {
-    try {
-      if (this.checkIfRoomExists(client.room)) {
-        const room = this.room[client.room];
-
-        room.roomVoteStatus = ROOM_STATUS.VOTING;
-      }
-
+    if (!this.checkIfRoomExists(client.room)) {
       throw new Error("Attempting to vote on non existing room");
-    } catch (err) {
-      return err.message;
     }
+
+    const room = this.room[client.room];
+
+    return (room.roomVoteStatus = ROOM_STATUS.VOTING);
   }
 
   handleEndedStatus(client: IPlayerData) {
-    try {
-      if (this.checkIfRoomExists(client.room)) {
-        const room = this.room[client.room];
-
-        room.roomVoteStatus = ROOM_STATUS.ENDED;
-      }
-
+    if (!this.checkIfRoomExists(client.room)) {
       throw new Error("Attempting to end a non existing room");
-    } catch (err) {
-      return err.message;
     }
+
+    const room = this.room[client.room];
+
+    room.roomVoteStatus = ROOM_STATUS.ENDED;
   }
 
   handleRestartStatus(client: IPlayerData) {
-    try {
-      if (this.checkIfRoomExists(client.room)) {
-        const room = this.room[client.room];
-
-        room.roomVoteStatus = ROOM_STATUS.WAITING;
-      }
-
+    if (!this.checkIfRoomExists(client.room)) {
       throw new Error("Attempting to restart a non existing room");
-    } catch (err) {
-      return err.message;
     }
+
+    const room = this.room[client.room];
+
+    return (room.roomVoteStatus = ROOM_STATUS.WAITING);
   }
 
   handleUpdateClientData(client: IPlayerData) {
-    try {
-      if (this.checkIfRoomExists(client.room)) {
-        const room = this.room[client.room];
+    if (!this.checkIfRoomExists(client.room)) {
+      throw new Error("Attempting to update a non existing room");
+    }
 
-        room.players = room.players.map((player) => {
-          if (player.clientId === client.clientId) {
-            return client;
-          }
+    const room = this.room[client.room];
 
-          return player;
-        });
+    room.players = room.players.map((player) => {
+      if (player.clientId === client.clientId) {
+        return client;
       }
 
-      throw new Error("Attempting to update a non existing room");
-    } catch (err) {
-      return err.message;
-    }
+      return player;
+    });
   }
 }
 

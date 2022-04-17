@@ -16,6 +16,10 @@ describe("Room Data", () => {
     roomData.handleRoomCreate(playerData);
   };
 
+  beforeEach(() => {
+    roomData.room = [];
+  });
+
   describe("User Actions", () => {
     it("should create a new room object based on client givens room", () => {
       createRoom();
@@ -30,9 +34,9 @@ describe("Room Data", () => {
     it("should throw an error if the room already exists", () => {
       createRoom();
 
-      expect(roomData.handleRoomCreate(playerData)).toEqual(
-        "You attempted to create a room that already exists"
-      );
+      expect(() => {
+        roomData.handleRoomCreate(playerData);
+      }).toThrow("You attempted to create a room that already exists");
     });
 
     it("should update room vote status to VOTING when user vote", () => {
@@ -145,16 +149,37 @@ describe("Room Data", () => {
       expect(Room.checkIfRoomExists("test")).toBeFalsy();
     });
 
-    it("should delete a user from room, if user no longer exists", async () => {
+    it("should clear a room if no user is available", () => {
+      createRoom();
+
+      const Room = roomData;
+
+      Room.removeCharacter(playerData);
+
+      expect(Room.checkIfRoomExists("test")).toBeFalsy();
+    });
+
+    it("should delete a user from room, if user no longer exists", () => {
       createRoom();
 
       const Room = roomData;
 
       Room.addCharacter(playerData);
 
-      await Room.removeCharacter(playerData);
+      const playerData2: IPlayerData = {
+        room: "test",
+        name: "Rod",
+        id: "1231233",
+        clientId: "1231233",
+        character: 0,
+        vote: 1,
+      };
 
-      expect(Room.pick("test").players).toEqual([]);
+      Room.addCharacter(playerData2);
+
+      Room.removeCharacter(playerData);
+
+      expect(Room.pick("test").players).toEqual([playerData2]);
     });
 
     it("should add a character to a room when user join", () => {
