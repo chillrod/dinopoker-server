@@ -15,6 +15,9 @@ import { Server, Socket } from "socket.io";
 import { IPlayerData } from "./model/IPlayerData";
 
 import RoomData from "./data/room-data";
+import RoomChatData from "./data/room-chat-data";
+
+import { IChatMessage } from "./model/IChatMessage";
 
 @WebSocketGateway({
   namespace: "/dinopoker-app",
@@ -42,15 +45,17 @@ export class DinoappGamesGateway
     RoomData.removeCharacter({ clientId: client.id });
   }
 
-  NotOk(client: IPlayerData): WsResponse<IPlayerData> {
+  NotOk(
+    client: IPlayerData | IChatMessage
+  ): WsResponse<IPlayerData | IChatMessage> {
     return { event: "NotOk", data: client };
   }
 
-  Ok(client: IPlayerData) {
+  Ok(client: IPlayerData | IChatMessage) {
     return this.srv.to(client.room).emit("Ok", client);
   }
 
-  PickRoomData(client: IPlayerData) {
+  PickRoomData(client: Pick<IPlayerData, "room">) {
     const pick = RoomData.pick(client.room);
 
     return this.srv.to(client.room).emit("PickRoomData", pick);
@@ -152,6 +157,21 @@ export class DinoappGamesGateway
       this.PickRoomData(data);
     } catch (err) {
       this.NotOk(data);
+
+      return err.message;
+    }
+  }
+
+  @SubscribeMessage("ROOM_CHAT_MESSAGE")
+  RoomChatMessage(client: Socket, message: IChatMessage) {
+    try {
+      RoomChatData.handleAddChatMessage(message);
+
+      this.Ok(message);
+
+      this.PickRoomData(message);
+    } catch (err) {
+      this.NotOk(message);
 
       return err.message;
     }

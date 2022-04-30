@@ -1,7 +1,7 @@
 import { IRoomData, ROOM_STATUS } from "../model/IRoomData";
 import { IPlayerData } from "../model/IPlayerData";
 
-class RoomData {
+export class RoomData {
   room: IRoomData[];
 
   constructor() {
@@ -17,6 +17,7 @@ class RoomData {
       roomVoteStatus: ROOM_STATUS.WAITING,
       room: playerData.room,
       players: [],
+      chat: [],
     };
 
     this.room[playerData.room] = mountRoom;
