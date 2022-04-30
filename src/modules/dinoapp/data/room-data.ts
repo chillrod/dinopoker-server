@@ -1,17 +1,5 @@
+import { IRoomData, ROOM_STATUS } from "../model/IRoomData";
 import { IPlayerData } from "../model/IPlayerData";
-
-interface IRoomData {
-  roomVoteStatus: string;
-  voteSystem?: number[];
-  room: string;
-  players: IPlayerData[];
-}
-
-enum ROOM_STATUS {
-  WAITING = "WAITING",
-  VOTING = "VOTING",
-  ENDED = "ENDED",
-}
 
 class RoomData {
   room: IRoomData[];

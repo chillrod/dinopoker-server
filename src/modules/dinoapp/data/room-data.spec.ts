@@ -9,6 +9,7 @@ describe("Room Data", () => {
     id: "123123",
     clientId: "123123",
     character: 0,
+    characterColor: "red",
     vote: 1,
   };
 
@@ -172,6 +173,7 @@ describe("Room Data", () => {
         id: "1231233",
         clientId: "1231233",
         character: 0,
+        characterColor: "red",
         vote: 1,
       };
 
@@ -192,6 +194,7 @@ describe("Room Data", () => {
         name: "Rod",
         id: "1231233",
         clientId: "1231233",
+        characterColor: "red",
         character: 0,
         vote: 1,
       };

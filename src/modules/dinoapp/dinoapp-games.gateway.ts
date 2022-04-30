@@ -7,6 +7,7 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
+  WsResponse,
 } from "@nestjs/websockets";
 
 import { Server, Socket } from "socket.io";
@@ -41,10 +42,8 @@ export class DinoappGamesGateway
     RoomData.removeCharacter({ clientId: client.id });
   }
 
-  ///
-
-  NotOk(client: IPlayerData) {
-    return this.srv.to(client.room).emit("NotOk", client);
+  NotOk(client: IPlayerData): WsResponse<IPlayerData> {
+    return { event: "NotOk", data: client };
   }
 
   Ok(client: IPlayerData) {
@@ -102,6 +101,51 @@ export class DinoappGamesGateway
   CharacterDataUpdate(client: Socket, data: IPlayerData) {
     try {
       RoomData.handleUpdateClientData(this.PlayerClientId(client, data));
+
+      this.Ok(data);
+
+      this.PickRoomData(data);
+    } catch (err) {
+      this.NotOk(data);
+
+      return err.message;
+    }
+  }
+
+  @SubscribeMessage("ROOM_SET_VOTING_STATUS")
+  RoomVotingStatus(client: Socket, data: IPlayerData) {
+    try {
+      RoomData.handleVotingStatus(this.PlayerClientId(client, data));
+
+      this.Ok(data);
+
+      this.PickRoomData(data);
+    } catch (err) {
+      this.NotOk(data);
+
+      return err.message;
+    }
+  }
+
+  @SubscribeMessage("ROOM_SET_ENDED_STATUS")
+  RoomEndedStatus(client: Socket, data: IPlayerData) {
+    try {
+      RoomData.handleEndedStatus(this.PlayerClientId(client, data));
+
+      this.Ok(data);
+
+      this.PickRoomData(data);
+    } catch (err) {
+      this.NotOk(data);
+
+      return err.message;
+    }
+  }
+
+  @SubscribeMessage("ROOM_SET_RESTART")
+  RoomRestartStatus(client: Socket, data: IPlayerData) {
+    try {
+      RoomData.handleRestartStatus(this.PlayerClientId(client, data));
 
       this.Ok(data);
 
