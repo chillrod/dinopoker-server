@@ -18,6 +18,7 @@ export class RoomData {
       room: playerData.room,
       players: [],
       chat: [],
+      voteSystem: [],
     };
 
     this.room[playerData.room] = mountRoom;
@@ -119,6 +120,19 @@ export class RoomData {
 
       return player;
     });
+  }
+
+  handleUpdateVoteSystem(
+    client: Pick<IPlayerData, "room">,
+    { voteSystem }: Pick<IRoomData, "voteSystem">
+  ) {
+    if (!this.checkIfRoomExists(client.room)) {
+      throw new Error("Attempting to update a non existing room");
+    }
+
+    const room = this.room[client.room];
+
+    room.voteSystem = voteSystem;
   }
 }
 

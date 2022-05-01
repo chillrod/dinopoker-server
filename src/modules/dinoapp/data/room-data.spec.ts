@@ -1,4 +1,5 @@
 import { IPlayerData } from "../model/IPlayerData";
+import { IRoomData } from "../model/IRoomData";
 
 import roomData from "./room-data";
 
@@ -29,6 +30,8 @@ describe("Room Data", () => {
         roomVoteStatus: "WAITING",
         room: "test",
         players: [],
+        chat: [],
+        voteSystem: [],
       });
     });
 
@@ -122,6 +125,24 @@ describe("Room Data", () => {
       Room.handleUpdateClientData(updatedData);
 
       expect(roomPick.players[0].vote).toEqual(15);
+    });
+
+    it("should update the vote system cards", () => {
+      createRoom();
+
+      const Room = roomData;
+
+      Room.addCharacter(playerData);
+
+      const roomPick: IRoomData = Room.pick(playerData.room);
+
+      expect(roomPick.voteSystem).toEqual([]);
+
+      Room.handleUpdateVoteSystem(playerData, {
+        voteSystem: [1, 2, 3, 4, 5, 6, 7, 8],
+      });
+
+      expect(roomPick.voteSystem).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
     });
   });
 

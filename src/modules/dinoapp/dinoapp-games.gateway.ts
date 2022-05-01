@@ -68,6 +68,13 @@ export class DinoappGamesGateway
     };
   }
 
+  ChatPlayerClientId(client: Socket, message: IChatMessage) {
+    return {
+      ...message,
+      clientId: client.id,
+    };
+  }
+
   @SubscribeMessage("ROOM_CREATE")
   CreateRoom(client: Socket, data: IPlayerData) {
     try {
@@ -165,7 +172,9 @@ export class DinoappGamesGateway
   @SubscribeMessage("ROOM_CHAT_MESSAGE")
   RoomChatMessage(client: Socket, message: IChatMessage) {
     try {
-      RoomChatData.handleAddChatMessage(message);
+      RoomChatData.handleAddChatMessage(
+        this.ChatPlayerClientId(client, message)
+      );
 
       this.Ok(message);
 
